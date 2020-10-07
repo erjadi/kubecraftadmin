@@ -1,4 +1,4 @@
-# kubecraftadmin
+# KubeCraftAdmin
 KubeCraftAdmin : The Adventurer's Admin Tool
 
 This project allows you to do basic Kubernetes administration through Minecraft.
