@@ -31,7 +31,11 @@ This should show the kubecraft splash screen
 6. Lastly step on the [beacon](https://minecraft.gamepedia.com/Beacon) to activate the link with your cluster.
 7. At this point your pens should be populated with animals!
 
-# Technical Details
+## Technical Details
 
-TODO
+### Structure
+
+### How to compile
+
+### TODO
 
