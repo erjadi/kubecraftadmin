@@ -10,4 +10,4 @@ RUN mkdir /app
 WORKDIR /app
 COPY --from=build-go /app/main /app/
 CMD ["/app/main"]
-EXPOSE 80
+EXPOSE 8000/tcp
