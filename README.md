@@ -22,11 +22,10 @@ How to run KubeCraftAdmin:
 2. Start up Minecraft Bedrock Edition
 3. Create a new world with the *Activate Cheats* option turned **on**
  ![Activate Cheats](/img/cheats.png)
-4. Once you've spawned log into the server with the following command
+4. Once you've spawned log into the server with the following command after which you should be greeted by the KubeCraftAdmin splash screen.
 ```
 /connect 10.0.0.1:8000/ws
 ```
-This should show the kubecraft splash screen
 5. Next find a nice area to spawn your kubecraft pen. Type *init* to generate the structure.
 6. Lastly step on the [beacon](https://minecraft.gamepedia.com/Beacon) to activate the link with your cluster.
 7. At this point your pens should be populated with animals!
