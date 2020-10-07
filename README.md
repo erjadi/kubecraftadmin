@@ -34,7 +34,15 @@ How to run KubeCraftAdmin:
 
 ### Structure
 
+KubeCraftAdmin is written in Golang. It builds upon the great [MCWSS](https://github.com/Sandertv/mcwss) project by [Sandertv](https://github.com/Sandertv).
+
+
 ### How to compile
 
-### TODO
+The easiest way to compile your own version is to use the provided Dockerfile.
+This way you can build it without requiring a local golang build environment.
+
+```
+docker build -t kubecraftadmin .
+```
 

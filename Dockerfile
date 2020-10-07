@@ -1,10 +1,13 @@
-FROM golang:latest 
+FROM golang:latest AS build-go
 RUN mkdir /app 
 ADD ./src/app/ /app/ 
-RUN mkdir /.kube
-ADD ./.kube /.kube/
 WORKDIR /app
 RUN go get -d
 RUN go build -o main . 
+
+FROM alpine
+RUN mkdir /app
+WORKDIR /app
+COPY --from=build-go /app/main /app/
 CMD ["/app/main"]
 EXPOSE 80
