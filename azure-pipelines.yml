@@ -27,5 +27,5 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
-          erjadi/KubeCraftAdmin:$(tag)
-          erjadi/KubeCraftAdmin:latest
+          erjadi/kubecraftadmin:$(tag)
+          erjadi/kubecraftadmin:latest
