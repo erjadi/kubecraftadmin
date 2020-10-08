@@ -38,5 +38,4 @@ func InitArea(p *mcwss.Player) {
 			{pos.X - 5, pos.Y + 5, pos.Z - 5},
 		}
 	})
-	initialized = true
 }
