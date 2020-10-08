@@ -12,12 +12,20 @@ variables:
   tag: '$(Build.BuildId)'
 
 stages:
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker Hub'
-    repository: 'erjadi'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    tags: |
-      erjadi/KubeCraftAdmin:$(tag)
-      erjadi/KubeCraftAdmin:latest
+- stage: Build and Push
+  displayName: Build and Push image
+  jobs:  
+  - job: Build and Push
+    displayName: Build and Push
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'Docker Hub'
+        repository: 'erjadi'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          erjadi/KubeCraftAdmin:$(tag)
+          erjadi/KubeCraftAdmin:latest
