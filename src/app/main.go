@@ -91,17 +91,19 @@ func main() {
 			fmt.Println(event.Message)
 			if (strings.Compare(event.Message, "detect")) == 0 {
 			}
+
 			// Initialize admin area
 			if (strings.Compare(event.Message, "init")) == 0 {
 				InitArea(player)
 			}
 
+			// Force sync if auto-init doesn't work
 			if (strings.Compare(event.Message, "sync")) == 0 {
 				fmt.Println("start syncing")
 				go LoopReconcile(player, clientset)
 			}
 
-			// Summon 4 animals
+			// Test: Summon 4 animals
 			if (strings.Compare(event.Message, "animals")) == 0 {
 				fmt.Println("summon animals!")
 				Summon(player, initpos, -12+rand.Intn(3), 5, -12+rand.Intn(3), "pig", "test")
