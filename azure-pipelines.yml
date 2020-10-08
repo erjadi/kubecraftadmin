@@ -23,7 +23,21 @@ stages:
     - task: Docker@2
       displayName: Build an image
       inputs:
-        command: buildAndPush
+        command: build
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          $(tag)
+- stage: Push
+  displayName: Push image
+  jobs:  
+  - job: Push
+    displayName: Push
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      displayName: Push an image
+      inputs:
+        command: push
         tags: |
           $(tag)
