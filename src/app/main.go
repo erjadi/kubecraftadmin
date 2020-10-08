@@ -52,6 +52,11 @@ func main() {
 		player.Exec("time set noon", nil)
 		player.Exec("weather clear", nil)
 
+		// Provide player with 'equipment'
+		player.Exec("give @s diamond_sword", nil)
+		player.Exec("give @s tnt 25", nil)
+		player.Exec("give @s flint_and_steel", nil)
+
 		player.OnTravelled(func(event *event.PlayerTravelled) {
 			if !initialized {
 				player.Position(func(pos mctype.Position) {
@@ -101,15 +106,6 @@ func main() {
 			if (strings.Compare(event.Message, "sync")) == 0 {
 				fmt.Println("start syncing")
 				go LoopReconcile(player, clientset)
-			}
-
-			// Test: Summon 4 animals
-			if (strings.Compare(event.Message, "animals")) == 0 {
-				fmt.Println("summon animals!")
-				Summon(player, initpos, -12+rand.Intn(3), 5, -12+rand.Intn(3), "pig", "test")
-				Summon(player, initpos, -12+rand.Intn(3), 5, -6+rand.Intn(3), "chicken", "test")
-				Summon(player, initpos, -6+rand.Intn(3), 5, -12+rand.Intn(3), "cow", "test")
-				Summon(player, initpos, -6+rand.Intn(3), 5, -6+rand.Intn(3), "horse", "test")
 			}
 
 		})

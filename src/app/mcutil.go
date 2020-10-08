@@ -25,12 +25,14 @@ func Summon(p *mcwss.Player, pos mctype.Position, x int, y int, z int, entity st
 	p.Exec(fmt.Sprintf("summon %s %s %d %d %d", entity, name, int(pos.X)+x, int(pos.Y)+y, int(pos.Z)+z), nil)
 }
 
-// Summonpos will spawn a named entity in a random area close to the position passed
+// Summonpos will spawn a named entity in a random area close to the position passed - UniqueID check will prevent spawning an entity more than once
 func Summonpos(p *mcwss.Player, pos mctype.Position, entity string, name string) {
 	if !Contains(uniqueIDs, name) {
 		uniqueIDs = append(uniqueIDs, name)
 		p.Exec(fmt.Sprintf("summon %s %s %d %d %d", entity, name, int(pos.X-1.5+3*rand.Float64()), int(pos.Y)-5, int(pos.Z-1.5+3*rand.Float64())), nil)
 		time.Sleep(100 * time.Millisecond)
+	} else {
+		fmt.Printf("Entity %s already exists\n", name)
 	}
 }
 
