@@ -23,9 +23,9 @@ stages:
     - task: Docker@2
       inputs:
         containerRegistry: 'Docker Hub'
-        repository: 'erjadi'
+        repository: 'erjadi/kubecraftadmin'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
-          kubecraftadmin:$(tag)
-          kubecraftadmin:latest
+          $(tag)
+          latest
