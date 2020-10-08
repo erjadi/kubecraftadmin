@@ -23,10 +23,11 @@ stages:
     - task: Docker@2
       displayName: Build an image
       inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
         tags: |
-          $(tag)
+          erjadi/KubeCraftAdmin:$(tag)
+          erjadi/KubeCraftAdmin:latest
 - stage: Push
   displayName: Push image
   jobs:  
@@ -38,6 +39,8 @@ stages:
     - task: Docker@2
       displayName: Push an image
       inputs:
-        command: push
+        containerRegistry: 'Docker Hub'
+        command: 'push'
         tags: |
-          $(tag)
+          erjadi/KubeCraftAdmin:$(tag)
+          erjadi/KubeCraftAdmin:latest
