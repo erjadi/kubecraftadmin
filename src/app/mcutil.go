@@ -49,8 +49,7 @@ func Testforentity(p *mcwss.Player, name string) bool {
 	return result
 }
 
-// Actionbar will display a message to the playerout
-
+// Actionbar will display a message to the player
 func Actionbar(player *mcwss.Player, message string) {
 	player.Exec(fmt.Sprintf("title %s actionbar %s", player.Name(), message), nil)
 }

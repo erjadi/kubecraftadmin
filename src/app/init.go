@@ -32,10 +32,10 @@ func InitArea(p *mcwss.Player) {
 		initpos = pos
 
 		namespacesp = []mctype.Position{
-			{pos.X - 11, pos.Y + 5, pos.Z - 11},
-			{pos.X - 11, pos.Y + 5, pos.Z - 5},
-			{pos.X - 5, pos.Y + 5, pos.Z - 11},
-			{pos.X - 5, pos.Y + 5, pos.Z - 5},
+			{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 11},
+			{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 5},
+			{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 11},
+			{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 5},
 		}
 	})
 }
