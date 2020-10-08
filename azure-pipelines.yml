@@ -21,9 +21,11 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
     - task: Docker@2
-      displayName: Build an image
       inputs:
-        command: buildAndPush
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        containerRegistry: 'Docker Hub'
+        repository: 'erjadi/kubecraftadmin'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
         tags: |
           $(tag)
+          latest
