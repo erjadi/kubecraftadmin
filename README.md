@@ -26,7 +26,7 @@ How to run KubeCraftAdmin:
 2. Start up Minecraft Bedrock Edition
 3. Create a new world with the *Activate Cheats* option turned **on**
  ![Activate Cheats](/img/cheats.png)
-4. Once you've spawned log into the server with the following command after which you should be greeted by the KubeCraftAdmin splash screen.
+4. Once you've spawned log into the server with the following command after which you should be greeted by the KubeCraftAdmin splash screen. You should also be given some items to start with (a sword, TNT and some flint).
 ```
 /connect 10.0.0.1:8000/ws
 ```
