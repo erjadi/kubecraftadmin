@@ -40,6 +40,24 @@ How to run KubeCraftAdmin:
 
 KubeCraftAdmin is written in Golang. It builds upon the great [MCWSS](https://github.com/Sandertv/mcwss) project by [Sandertv](https://github.com/Sandertv).
 
+This project makes use of the [Websocket Server](https://minecraft.gamepedia.com/Commands/wsserver) functionality present in Minecraft Bedrock and Education Edition. The WS connection is a Minecraft client connection, which means that all actions are performed through the client. The server / local world is unaffected and not controlled by this project. This also implies we need to activate cheats in the world to be able to [summon](https://minecraft.gamepedia.com/Commands/summon) or [kill](https://minecraft.gamepedia.com/Commands/kill) entities.
+
+The below description explains the main process which you can find in [kubecraftadmin.go](/src/app/kubecraftadmin.go).  
+Highly simplified, KubeCraftAdmin connects to the Kubernetes cluster, spawns the required entities and starts an endless loop function *LoopReconcile*. Every second it starts a sync function called *ReconcileKubetoMC* which basically:
+
+- Enumerates entities in Minecraft
+- Enumerates resources in Kubernetes
+- Kills / Spawns the differences in Minecraft
+
+For the reverse sync we rely on a mobEvent which triggers execution of *ReconcileMCtoKubeMob*.
+We basically perform the same check, but this time we take the Minecraft entities as the truth and delete the corresponding Kubernetes resources.
+
+### Known Issues / TODO
+
+- There are some hacks to make the sync stable. Some operations take time on the kubernetes cluster (e.g. you kill a service in Minecraft). For the duration of the deletion process, Minecraft and Kubernetes will be out of sync (chicken is dead, service is still there). This could lead to syncing issues where KubeCraftAdmin tries to spawn chickens. Right now this is 'fixed' by keeping a list of uniqueIDs and **never spawning the same entity twice**. This has its own issues. A slight improvement would be to have a TTL on the uniqueIDs, but the best solution would be to keep track of the state as "being synced to MC" or "being synced to K8s".  
+- Hardcoded to 4 namespaces (more than 4 will crash)
+- Logging is bad / non-configurable
+- No error handling
 
 ### How to compile
 
