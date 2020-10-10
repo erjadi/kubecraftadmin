@@ -34,5 +34,5 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
-          $(prereleaseVersionNumber)
+          $(tag)
           latest
