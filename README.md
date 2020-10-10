@@ -19,9 +19,9 @@ You will need the following to get started:
 
 How to run KubeCraftAdmin:
 
-1. Run the container erjadi/kubecraftadmin passing the external port and the location of your .kube directory. The container internally listens to port 8000 and in my case my .kube directory resides in /home/erjadi/.kube
+1. Run the container erjadi/kubecraftadmin passing the external port and the location of your .kube directory. The container internally listens to port 8000 and in my case my .kube directory resides in /home/erjadi/.kube. You can optionally specify one to four namespaces from your cluster using the environment variable *namespaces*
 ```
- docker run -p 8000:8000 -v /home/erjadi/.kube:/.kube erjadi/kubecraftadmin
+ docker run -p 8000:8000 -v /home/erjadi/.kube:/.kube [-e namespaces=mynamespace1,mynamespace2] erjadi/kubecraftadmin
 ```
 2. Start up Minecraft Bedrock Edition
 3. Create a new world with the *Activate Cheats* option turned **on**

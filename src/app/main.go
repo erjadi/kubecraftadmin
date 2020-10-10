@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 
 	"github.com/sandertv/mcwss/mctype"
@@ -11,7 +13,7 @@ import (
 	"github.com/sandertv/mcwss/protocol/event"
 
 	"github.com/sandertv/mcwss"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -19,6 +21,7 @@ import (
 var initpos mctype.Position
 var initialized bool
 var uniqueIDs []string
+var selectednamespaces []string
 
 var agent mcwss.Agent
 var namespacesp []mctype.Position
@@ -27,11 +30,6 @@ func main() {
 	uniqueIDs = make([]string, 0)
 	initialized = false
 	rand.Seed(86)
-	// Create a new server using the default configuration. To use specific configuration, pass a *wss.Config{} in here.
-	var c = mcwss.Config{HandlerPattern: "/ws", Address: "0.0.0.0:8000"}
-	server := mcwss.NewServer(&c)
-
-	fmt.Println("Listening")
 
 	// Initialize Kube connection
 	config, err := clientcmd.BuildConfigFromFlags("", "/.kube/config")
@@ -44,6 +42,12 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	// Create a new server using the default configuration. To use specific configuration, pass a *wss.Config{} in here.
+	var c = mcwss.Config{HandlerPattern: "/ws", Address: "0.0.0.0:8000"}
+	server := mcwss.NewServer(&c)
+
+	fmt.Println("Listening")
 
 	// On first connection
 	server.OnConnection(func(player *mcwss.Player) {
@@ -76,6 +80,36 @@ func main() {
 							if !initialized {
 								initialized = true
 								fmt.Println("initialized!")
+
+								// Read Namespaces Env - Compile list of selected namespaces
+								passedenv := os.Getenv("namespaces")
+								namespaces, _ := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+
+								if len(passedenv) > 0 {
+									passedenvlist := strings.Split(passedenv, ",")
+									for _, ns := range namespaces.Items {
+										for _, envns := range passedenvlist {
+											if strings.EqualFold(ns.Name, envns) {
+												selectednamespaces = append(selectednamespaces, ns.Name)
+											}
+										}
+									}
+									if len(selectednamespaces) < 4 { // if less than 4 specified, select until length is 4
+										for _, ns := range namespaces.Items {
+											if !Contains(selectednamespaces, ns.Name) {
+												selectednamespaces = append(selectednamespaces, ns.Name)
+												if len(selectednamespaces) == 4 {
+													break
+												}
+											}
+										}
+									}
+								} else {
+									for i := 0; i < 4; i++ {
+										selectednamespaces = append(selectednamespaces, namespaces.Items[i].Name)
+									}
+								}
+
 								Actionbar(player, "Connected to k8s cluster")
 								go LoopReconcile(player, clientset)
 							}
