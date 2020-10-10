@@ -9,9 +9,7 @@ resources:
 - repo: self
 
 variables:
-  tag: $(Date:yyyyMMdd).$(Rev:r)
-  version.MajorMinor: '1.2' # Manually adjust the version number as needed for semantic versioning. Revision is auto-incremented.
-  version.Revision: $[counter(variables['version.MajorMinor'], 0)]
+  tag: 'Set by Powershell script'
 
 stages:
 - stage: Build
@@ -27,10 +25,8 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          [string] $dateTime = (Get-Date -Format 'yyyyMMdd')
-          [string] $prereleaseVersionNumber = "$dateTime.$version.Revision"
-          Write-Host "Setting the prerelease version number variable to '$prereleaseVersionNumber'."
-          Write-Host "##vso[task.setvariable variable=prereleaseVersionNumber]$prereleaseVersionNumber"
+          [string] $dateTime = (Get-Date -Format 'yyyyMMdd.HHmmss')
+          Write-Host "##vso[task.setvariable variable=tag]$dateTime"
     - task: Docker@2
       inputs:
         containerRegistry: 'Docker Hub'
