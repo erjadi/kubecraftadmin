@@ -10,6 +10,8 @@ resources:
 
 variables:
   tag: $(Date:yyyyMMdd).$(Rev:r)
+  version.MajorMinor: '1.2' # Manually adjust the version number as needed for semantic versioning. Revision is auto-incremented.
+  version.Revision: $[counter(variables['version.MajorMinor'], 0)]
 
 stages:
 - stage: Build
@@ -20,6 +22,15 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+    - task: PowerShell@2
+      displayName: Set the VersionNumber variable value
+      inputs:
+        targetType: 'inline'
+        script: |
+          [string] $dateTime = (Get-Date -Format 'yyyyMMdd')
+          [string] $prereleaseVersionNumber = "$dateTime.$version.Revision"
+          Write-Host "Setting the prerelease version number variable to '$prereleaseVersionNumber'."
+          Write-Host "##vso[task.setvariable variable=prereleaseVersionNumber]$prereleaseVersionNumber"
     - task: Docker@2
       inputs:
         containerRegistry: 'Docker Hub'
@@ -27,5 +38,5 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
-          $(tag)
+          $(prereleaseVersionNumber)
           latest
