@@ -47,7 +47,7 @@ func main() {
 	var c = mcwss.Config{HandlerPattern: "/ws", Address: "0.0.0.0:8000"}
 	server := mcwss.NewServer(&c)
 
-	fmt.Println("Listening")
+	fmt.Println("Listening on port 8000")
 
 	// On first connection
 	server.OnConnection(func(player *mcwss.Player) {
