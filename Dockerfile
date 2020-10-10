@@ -1,5 +1,4 @@
-FROM golang:latest AS build-go
-RUN mkdir /app 
+FROM erjadi/kcabuild:latest AS build-go
 ADD ./src/app/ /app/ 
 WORKDIR /app
 RUN go get -d
