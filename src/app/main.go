@@ -55,6 +55,7 @@ func main() {
 		fmt.Println("Player has entered!")
 		player.Exec("time set noon", nil)
 		player.Exec("weather clear", nil)
+		player.Exec("alwaysday", nil)
 
 		// Provide player with 'equipment'
 		player.Exec("give @s diamond_sword", nil)
