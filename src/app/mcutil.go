@@ -3,11 +3,15 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
+
+	//	"math/rand"
 	"time"
 
 	"github.com/sandertv/mcwss"
 	"github.com/sandertv/mcwss/mctype"
 	"github.com/sandertv/mcwss/protocol/command"
+	"k8s.io/client-go/kubernetes"
 )
 
 // PlayerFill will fill the playing area with blocktype, coordinates are relative to the player position
@@ -26,13 +30,18 @@ func Summon(p *mcwss.Player, pos mctype.Position, x int, y int, z int, entity st
 }
 
 // Summonpos will spawn a named entity in a random area close to the position passed - UniqueID check will prevent spawning an entity more than once
-func Summonpos(p *mcwss.Player, pos mctype.Position, entity string, name string) {
+func Summonpos(p *mcwss.Player, clientset *kubernetes.Clientset, pos mctype.Position, entity string, name string) {
+	fmt.Printf("IN summon 1111\n")
 	if !Contains(uniqueIDs, name) {
+		fmt.Printf("IN summon 2222\n")
 		uniqueIDs = append(uniqueIDs, name)
 		p.Exec(fmt.Sprintf("summon %s %s %d %d %d", entity, name, int(pos.X-1.5+3*rand.Float64()), int(pos.Y)-5, int(pos.Z-1.5+3*rand.Float64())), nil)
+
 		time.Sleep(100 * time.Millisecond)
+		fmt.Printf("IN summon 3333\n")
 	} else {
 		fmt.Printf("Entity %s already exists\n", name)
+		//ReconcileMCtoKubeMob(p, clientset, 12)
 	}
 }
 
@@ -54,4 +63,52 @@ func Testforentity(p *mcwss.Player, name string) bool {
 // Actionbar will display a message to the player
 func Actionbar(player *mcwss.Player, message string) {
 	player.Exec(fmt.Sprintf("title %s actionbar %s", player.Name(), message), nil)
+}
+
+// Get Current Player Position
+func GetPlayerPosition(player *mcwss.Player) mctype.Position {
+	var pos mctype.Position
+
+	var x float64
+	var y float64
+	var z float64
+
+	player.Exec("tp ~~~", func(response map[string]interface{}) {
+		fmt.Println("here 1")
+		if destination, ok := response["destination"]; ok {
+			fmt.Println("here 2")
+			xString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["x"])
+			x, _ = strconv.ParseFloat(xString, 64)
+
+			yString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["y"])
+			y, _ = strconv.ParseFloat(yString, 64)
+
+			zString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["z"])
+			z, _ = strconv.ParseFloat(zString, 64)
+
+			fmt.Println("here 3 ", x, y, z)
+		}
+
+		pos.X = x
+		pos.Y = y
+		pos.Z = z
+
+	})
+
+	return pos
+}
+
+// Get Namspace Positions
+func GetNamespacesPosition(pos mctype.Position) []mctype.Position {
+	fmt.Println("here 4 ", pos)
+	namespacesp := []mctype.Position{
+		{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 11},
+		{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 5},
+		{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 11},
+		{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 5},
+	}
+
+	fmt.Println("here 4 ", namespacesp)
+
+	return namespacesp
 }

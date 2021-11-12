@@ -15,27 +15,25 @@ func MOTD(player *mcwss.Player) {
 
 // InitArea will spawn an initial playing area with 4 animal pens and a beacon at the center (currently hardcoded) and set the init position
 func InitArea(p *mcwss.Player) {
-	p.Position(func(pos mctype.Position) {
-		// Create animal pens
-		Fill(p, pos, -20, -2, -20, 20, 15, 20, "air")
-		Fill(p, pos, -15, -2, -15, 15, -1, 15, "stone 4")
-		Fill(p, pos, -1, -2, -1, 1, -2, 1, "glass")
-		Fill(p, pos, 0, -2, 0, 0, -2, 0, "beacon")
-		Fill(p, pos, -14, -1, -14, 14, -1, 14, "air")
-		Fill(p, pos, -14, -2, -14, -2, -2, -2, "grass")
-		Fill(p, pos, -14, -1, -14, -2, -1, -2, "fence")
-		Fill(p, pos, -13, -1, -13, -9, -1, -9, "air")
-		Fill(p, pos, -13, -1, -7, -9, -1, -3, "air")
-		Fill(p, pos, -7, -1, -13, -3, -1, -9, "air")
-		Fill(p, pos, -7, -1, -7, -3, -1, -3, "air")
+	// Create animal pens
+	fmt.Println("Creating Animal Pens ", initpos)
 
-		initpos = pos
+	Fill(p, initpos, -20, -2, -20, 20, 15, 20, "air")
+	Fill(p, initpos, -15, -2, -15, 15, -1, 15, "stone 4")
+	Fill(p, initpos, -1, -2, -1, 1, -2, 1, "glass")
+	Fill(p, initpos, 0, -2, 0, 0, -2, 0, "beacon")
+	Fill(p, initpos, -14, -1, -14, 14, -1, 14, "air")
+	Fill(p, initpos, -14, -2, -14, -2, -2, -2, "grass")
+	Fill(p, initpos, -14, -1, -14, -2, -1, -2, "fence")
+	Fill(p, initpos, -13, -1, -13, -9, -1, -9, "air")
+	Fill(p, initpos, -13, -1, -7, -9, -1, -3, "air")
+	Fill(p, initpos, -7, -1, -13, -3, -1, -9, "air")
+	Fill(p, initpos, -7, -1, -7, -3, -1, -3, "air")
 
-		namespacesp = []mctype.Position{
-			{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 11},
-			{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 5},
-			{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 11},
-			{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 5},
-		}
-	})
+	namespacesp = []mctype.Position{
+		{X: initpos.X - 11, Y: initpos.Y + 5, Z: initpos.Z - 11},
+		{X: initpos.X - 11, Y: initpos.Y + 5, Z: initpos.Z - 5},
+		{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 11},
+		{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 5},
+	}
 }
