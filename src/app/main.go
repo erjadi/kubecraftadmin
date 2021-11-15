@@ -9,12 +9,12 @@ import (
 	"strings"
 
 	"github.com/sandertv/mcwss/mctype"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sandertv/mcwss/protocol/command"
 	"github.com/sandertv/mcwss/protocol/event"
 
 	"github.com/sandertv/mcwss"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var initpos mctype.Position
@@ -54,7 +54,7 @@ func main() {
 
 	// On first connection
 	server.OnConnection(func(player *mcwss.Player) {
-		go MOTD(player)
+		//go MOTD(player)
 		fmt.Println("Player has entered!")
 		player.Exec("time set noon", nil)
 		player.Exec("weather clear", nil)
@@ -67,8 +67,20 @@ func main() {
 
 		fmt.Println("Selected namespaces: ", selectednamespaces)
 
+		playerName := player.Name()
+		playerTravelMap := make(map[string]bool)
+		playerTravelMap[playerName] = false
+
+		playerInitMap := make(map[string]bool)
+		playerInitMap[playerName] = false
+
 		player.OnTravelled(func(event *event.PlayerTravelled) {
-			if !initialized {
+			//if !initialized {
+			if !playerTravelMap[playerName] {
+				playerTravelMap[playerName] = true
+				fmt.Println("traveling")
+
+				//playerIdMap[playerId] = true
 				//initpos = GetPlayerPosition(player)
 				//namespacesp = GetNamespacesPosition(initpos)
 				var x float64
@@ -99,11 +111,13 @@ func main() {
 					{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 11},
 					{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 5},
 				}
-
+			} else {
 				player.Exec("testforblock ~ ~-1 ~ beacon", func(response *command.LocalPlayerName) {
 					if response.StatusCode == 0 {
-						if !initialized {
-							initialized = true
+						if !playerInitMap[playerName] {
+							fmt.Println("traveling")
+							//playerIdMap[playerName] = true
+							playerInitMap[playerName] = true
 							fmt.Println("initialized!")
 
 							// Read Namespaces Env - Compile list of selected namespaces
@@ -158,12 +172,15 @@ func main() {
 
 			// Initialize admin area
 			if (strings.Compare(event.Message, "init")) == 0 {
-				//player.Position(func(pos mctype.Position) {
-				// Start initialization if you stand on beacon block
-				//initpos = GetPlayerPosition(player)
-				//namespacesp = GetNamespacesPosition(initpos)
-
+				//playerTravelMap[playerName] = false
+				//playerInitMap[playerName] = false
 				InitArea(player)
+			}
+
+			// reset
+			if (strings.Compare(event.Message, "reset")) == 0 {
+				playerTravelMap[playerName] = false
+				playerInitMap[playerName] = false
 			}
 
 			// Force sync if auto-init doesn't work
