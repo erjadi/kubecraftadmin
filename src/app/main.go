@@ -18,7 +18,7 @@ import (
 
 var initpos mctype.Position
 var initialized bool = false
-var uniqueIDs []string
+var playerUniqueIdsMap = make(map[string][]string)
 var selectednamespaces []string
 
 var agent mcwss.Agent
@@ -41,7 +41,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	uniqueIDs = make([]string, 0)
 	initialized = false
 	rand.Seed(86)
 
@@ -55,6 +54,9 @@ func main() {
 
 	// On first connection
 	server.OnConnection(func(player *mcwss.Player) {
+		uniqueIDs := make([]string, 0)
+		playerUniqueIdsMap[player.Name()] = uniqueIDs
+
 		//MOTD(player)
 		MOTD(player)
 		Actionbar(player, "Connected to k8s cluster")

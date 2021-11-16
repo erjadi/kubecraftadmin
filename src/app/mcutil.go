@@ -31,14 +31,11 @@ func Summon(p *mcwss.Player, pos mctype.Position, x int, y int, z int, entity st
 
 // Summonpos will spawn a named entity in a random area close to the position passed - UniqueID check will prevent spawning an entity more than once
 func Summonpos(p *mcwss.Player, clientset *kubernetes.Clientset, pos mctype.Position, entity string, name string) {
-	fmt.Printf("IN summon 1111\n")
-	if !Contains(uniqueIDs, name) {
-		fmt.Printf("IN summon 2222\n")
-		uniqueIDs = append(uniqueIDs, name)
+	if !Contains(playerUniqueIdsMap[p.Name()], name) {
+		playerUniqueIdsMap[p.Name()] = append(playerUniqueIdsMap[p.Name()], name)
 		p.Exec(fmt.Sprintf("summon %s %s %d %d %d", entity, name, int(pos.X-1.5+3*rand.Float64()), int(pos.Y)-5, int(pos.Z-1.5+3*rand.Float64())), nil)
 
 		time.Sleep(100 * time.Millisecond)
-		fmt.Printf("IN summon 3333\n")
 	} else {
 		fmt.Printf("Entity %s already exists\n", name)
 		//ReconcileMCtoKubeMob(p, clientset, 12)

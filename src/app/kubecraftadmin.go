@@ -90,7 +90,7 @@ func ReconcileKubetoMC(p *mcwss.Player, clientset *kubernetes.Clientset) {
 				p.Exec(fmt.Sprintf("kill @e[name=%s,type=chicken]", entity), nil)
 				p.Exec(fmt.Sprintf("kill @e[name=%s,type=cow]", entity), nil)
 				p.Exec(fmt.Sprintf("kill @e[name=%s,type=pig]", entity), nil)
-				uniqueIDs = Remove(uniqueIDs, entity)
+				playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], entity)
 				time.Sleep(50 * time.Millisecond)
 			}
 		}
@@ -112,7 +112,7 @@ func DeleteEntities(p *mcwss.Player) {
 		p.Exec(fmt.Sprintf("kill @e[name=%s,type=cow]", entity), nil)
 		p.Exec(fmt.Sprintf("kill @e[name=%s,type=pig]", entity), nil)
 
-		uniqueIDs = Remove(uniqueIDs, entity)
+		playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], entity)
 		time.Sleep(50 * time.Millisecond)
 	}
 }
@@ -141,9 +141,9 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 
 				for _, pod := range pods.Items {
 					if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:pod:%s", pod.Namespace, pod.Name)) {
-						fmt.Printf(fmt.Sprintf("Player killed %s:pod:%s\n", pod.Namespace, pod.Name))
+						fmt.Printf(fmt.Sprintf("Player %s killed %s:pod:%s\n", p.Name(), pod.Namespace, pod.Name))
 						clientset.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
-						uniqueIDs = Remove(uniqueIDs, fmt.Sprintf("%s:pod:%s", pod.Namespace, pod.Name))
+						playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], fmt.Sprintf("%s:pod:%s", pod.Namespace, pod.Name))
 					}
 				}
 			}
@@ -162,9 +162,9 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 
 				for _, ss := range statefulset.Items {
 					if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:statefulset:%s", ss.Namespace, ss.Name)) {
-						fmt.Printf(fmt.Sprintf("Player killed %s:statefulset:%s\n", ss.Namespace, ss.Name))
+						fmt.Printf(fmt.Sprintf("Player %s killed %s:pod:%s\n", p.Name(), ss.Namespace, ss.Name))
 						//clientset.CoreV1().StatefulSets(ss.Namespace).Delete(context.TODO(), ss.Name, metav1.DeleteOptions{})
-						uniqueIDs = Remove(uniqueIDs, fmt.Sprintf("%s:statefulset:%s", ss.Namespace, ss.Name))
+						playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], fmt.Sprintf("%s:statefulset:%s", ss.Namespace, ss.Name))
 					}
 				}
 			}
@@ -183,9 +183,9 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 
 				for _, service := range services.Items {
 					if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:service:%s", service.Namespace, service.Name)) {
-						fmt.Printf(fmt.Sprintf("Player killed %s:service:%s!\n", service.Namespace, service.Name))
+						fmt.Printf(fmt.Sprintf("Player %s killed %s:pod:%s\n", p.Name(), service.Namespace, service.Name))
 						//clientset.CoreV1().Services(service.Namespace).Delete(context.TODO(), service.Name, metav1.DeleteOptions{})
-						uniqueIDs = Remove(uniqueIDs, fmt.Sprintf("%s:service:%s", service.Namespace, service.Name))
+						playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], fmt.Sprintf("%s:service:%s", service.Namespace, service.Name))
 					}
 				}
 			}
@@ -205,9 +205,9 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 
 				for _, rc := range rcs.Items {
 					if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:replicaset:%s", rc.Namespace, rc.Name)) {
-						fmt.Printf(fmt.Sprintf("Player killed %s:replicaset:%s\n", rc.Namespace, rc.Name))
+						fmt.Printf(fmt.Sprintf("Player %s killed %s:pod:%s\n", p.Name(), rc.Namespace, rc.Name))
 						//clientset.AppsV1().ReplicaSets(rc.Namespace).Delete(context.TODO(), rc.Name, metav1.DeleteOptions{})
-						uniqueIDs = Remove(uniqueIDs, fmt.Sprintf("%s:replicaset:%s", rc.Namespace, rc.Name))
+						playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], fmt.Sprintf("%s:replicaset:%s", rc.Namespace, rc.Name))
 					}
 				}
 			}
@@ -227,10 +227,10 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 
 				for _, ds := range daemonset.Items {
 					if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:daemonset:%s", ds.Namespace, ds.Name)) {
-						fmt.Printf(fmt.Sprintf("Player killed %s:daemonset:%s\n", ds.Namespace, ds.Name))
+						fmt.Printf(fmt.Sprintf("Player %s killed %s:pod:%s\n", p.Name(), ds.Namespace, ds.Name))
 						//clientset.AppsV1().DaemonSets(ds.Namespace).Delete(context.TODO(), ds.Name, metav1.DeleteOptions{})
 						// Remove deployment from uniqueIDs to allow recreation
-						uniqueIDs = Remove(uniqueIDs, fmt.Sprintf("%s:daemonset:%s", ds.Namespace, ds.Name))
+						playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], fmt.Sprintf("%s:daemonset:%s", ds.Namespace, ds.Name))
 					}
 				}
 			}
@@ -250,10 +250,10 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 
 				for _, deployment := range deployments.Items {
 					if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:deployment:%s", deployment.Namespace, deployment.Name)) {
-						fmt.Printf(fmt.Sprintf("Player killed %s:deployment:%s\n", deployment.Namespace, deployment.Name))
+						fmt.Printf(fmt.Sprintf("Player %s killed %s:pod:%s\n", p.Name(), deployment.Namespace, deployment.Name))
 						//clientset.AppsV1().Deployments(deployment.Namespace).Delete(context.TODO(), deployment.Name, metav1.DeleteOptions{})
 						// Remove deployment from uniqueIDs to allow recreation
-						uniqueIDs = Remove(uniqueIDs, fmt.Sprintf("%s:deployment:%s", deployment.Namespace, deployment.Name))
+						playerUniqueIdsMap[p.Name()] = Remove(playerUniqueIdsMap[p.Name()], fmt.Sprintf("%s:deployment:%s", deployment.Namespace, deployment.Name))
 					}
 				}
 			}
