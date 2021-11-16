@@ -34,6 +34,13 @@ How to run KubeCraftAdmin:
 6. Lastly step on the [beacon](https://minecraft.gamepedia.com/Beacon) to activate the link with your cluster.
 7. At this point your pens should be populated with animals!
 
+## Running KUbecraftadmin on OpenShift
+
+- oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kubekraft:default
+- oc create -f deploy.yaml
+- Get the route
+- Load minecraft and use ```/connect <route-url>/ws```
+
 ## Technical Details
 
 ### Structure
