@@ -8,40 +8,44 @@ import (
 	"strings"
 
 	"github.com/sandertv/mcwss/mctype"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sandertv/mcwss/protocol/command"
 	"github.com/sandertv/mcwss/protocol/event"
 
 	"github.com/sandertv/mcwss"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 var initpos mctype.Position
-var initialized bool
+var initialized bool = false
 var uniqueIDs []string
 var selectednamespaces []string
 
 var agent mcwss.Agent
 var namespacesp []mctype.Position
+var playerKubeMap = make(map[string][]string)
+var playerEntitiesMap = make(map[string][]string)
+
+// ENV paramaters
+var passedNamespaces = os.Getenv("namespaces")
+var accessWithinCluster = os.Getenv("accessWithinCluster")
 
 func main() {
+	if passedNamespaces == "" {
+		fmt.Print("The namespaces env parameter was not set (comma separated list of up to 4 namespaces to view in minecraft)!\n")
+		os.Exit(1)
+	}
+
+	if accessWithinCluster == "" {
+		fmt.Print("The accessWithinCluster env parameter was not set (true|false)!\n")
+		os.Exit(1)
+	}
+
 	uniqueIDs = make([]string, 0)
 	initialized = false
 	rand.Seed(86)
 
-	// Initialize Kube connection
-	config, err := clientcmd.BuildConfigFromFlags("", "/.kube/config")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
+	clientset, _ := GetClient(accessWithinCluster)
 
 	// Create a new server using the default configuration. To use specific configuration, pass a *wss.Config{} in here.
 	var c = mcwss.Config{HandlerPattern: "/ws", Address: "0.0.0.0:8000"}
@@ -51,7 +55,10 @@ func main() {
 
 	// On first connection
 	server.OnConnection(func(player *mcwss.Player) {
-		go MOTD(player)
+		//MOTD(player)
+		MOTD(player)
+		Actionbar(player, "Connected to k8s cluster")
+
 		fmt.Println("Player has entered!")
 		player.Exec("time set noon", nil)
 		player.Exec("weather clear", nil)
@@ -62,62 +69,58 @@ func main() {
 		player.Exec("give @s tnt 25", nil)
 		player.Exec("give @s flint_and_steel", nil)
 
+		playerName := player.Name()
+		playerTravelMap := make(map[string]bool)
+		playerTravelMap[playerName] = false
+
+		playerInitMap := make(map[string]bool)
+		playerInitMap[playerName] = false
+
+		GetPlayerPosition(player)
+		SetNamespacesPosition()
+
 		player.OnTravelled(func(event *event.PlayerTravelled) {
-			if !initialized {
-				player.Position(func(pos mctype.Position) {
-					// Start initialization if you stand on beacon block
-					player.Exec("testforblock ~ ~-1 ~ beacon", func(response *command.LocalPlayerName) {
-						if response.StatusCode == 0 {
+			player.Exec("testforblock ~ ~-1 ~ beacon", func(response *command.LocalPlayerName) {
+				if response.StatusCode == 0 {
+					if !playerInitMap[playerName] {
+						playerInitMap[playerName] = true
+						fmt.Println("initialized!")
 
-							initpos = pos
+						// Read Namespaces Env - Compile list of selected namespaces
+						namespaces, _ := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 
-							namespacesp = []mctype.Position{
-								{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 11},
-								{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 5},
-								{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 11},
-								{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 5},
-							}
-
-							if !initialized {
-								initialized = true
-								fmt.Println("initialized!")
-
-								// Read Namespaces Env - Compile list of selected namespaces
-								passedenv := os.Getenv("namespaces")
-								namespaces, _ := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-
-								if len(passedenv) > 0 {
-									passedenvlist := strings.Split(passedenv, ",")
-									for _, ns := range namespaces.Items {
-										for _, envns := range passedenvlist {
-											if strings.EqualFold(ns.Name, envns) {
-												selectednamespaces = append(selectednamespaces, ns.Name)
-											}
-										}
-									}
-									if len(selectednamespaces) < 4 { // if less than 4 specified, select until length is 4
-										for _, ns := range namespaces.Items {
-											if !Contains(selectednamespaces, ns.Name) {
-												selectednamespaces = append(selectednamespaces, ns.Name)
-												if len(selectednamespaces) == 4 {
-													break
-												}
-											}
-										}
-									}
-								} else {
-									for i := 0; i < 4; i++ {
-										selectednamespaces = append(selectednamespaces, namespaces.Items[i].Name)
+						if len(passedNamespaces) > 0 {
+							passedNamespacesList := strings.Split(passedNamespaces, ",")
+							for _, ns := range namespaces.Items {
+								for _, envns := range passedNamespacesList {
+									if strings.EqualFold(ns.Name, envns) {
+										selectednamespaces = append(selectednamespaces, ns.Name)
 									}
 								}
-
-								Actionbar(player, "Connected to k8s cluster")
-								go LoopReconcile(player, clientset)
+							}
+							if len(selectednamespaces) < 4 { // if less than 4 specified, select until length is 4
+								for _, ns := range namespaces.Items {
+									if !Contains(selectednamespaces, ns.Name) {
+										selectednamespaces = append(selectednamespaces, ns.Name)
+										if len(selectednamespaces) == 4 {
+											break
+										}
+									}
+								}
+							}
+						} else {
+							for i := 0; i < 4; i++ {
+								selectednamespaces = append(selectednamespaces, namespaces.Items[i].Name)
+								fmt.Println("namespace ", selectednamespaces)
 							}
 						}
-					})
-				})
-			}
+
+						fmt.Println("Selected namespaces: ", selectednamespaces)
+
+						go LoopReconcile(player, clientset)
+					}
+				}
+			})
 		})
 
 		// If a mob is killed by the player we do another check which entity is missing
@@ -134,6 +137,9 @@ func main() {
 
 			// Initialize admin area
 			if (strings.Compare(event.Message, "init")) == 0 {
+				DeleteEntities(player)
+				GetPlayerPosition(player)
+				SetNamespacesPosition()
 				InitArea(player)
 			}
 
@@ -142,7 +148,6 @@ func main() {
 				fmt.Println("start syncing")
 				go LoopReconcile(player, clientset)
 			}
-
 		})
 
 	})
