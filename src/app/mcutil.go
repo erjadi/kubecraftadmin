@@ -66,17 +66,14 @@ func Actionbar(player *mcwss.Player, message string) {
 }
 
 // Get Current Player Position
-func GetPlayerPosition(player *mcwss.Player) mctype.Position {
-	var pos mctype.Position
+func GetPlayerPosition(player *mcwss.Player) {
 
 	var x float64
 	var y float64
 	var z float64
 
 	player.Exec("tp ~~~", func(response map[string]interface{}) {
-		fmt.Println("here 1")
 		if destination, ok := response["destination"]; ok {
-			fmt.Println("here 2")
 			xString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["x"])
 			x, _ = strconv.ParseFloat(xString, 64)
 
@@ -86,29 +83,20 @@ func GetPlayerPosition(player *mcwss.Player) mctype.Position {
 			zString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["z"])
 			z, _ = strconv.ParseFloat(zString, 64)
 
-			fmt.Println("here 3 ", x, y, z)
 		}
 
-		pos.X = x
-		pos.Y = y
-		pos.Z = z
-
+		initpos.X = x
+		initpos.Y = y
+		initpos.Z = z
 	})
-
-	return pos
 }
 
 // Get Namspace Positions
-func GetNamespacesPosition(pos mctype.Position) []mctype.Position {
-	fmt.Println("here 4 ", pos)
-	namespacesp := []mctype.Position{
-		{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 11},
-		{X: pos.X - 11, Y: pos.Y + 5, Z: pos.Z - 5},
-		{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 11},
-		{X: pos.X - 5, Y: pos.Y + 5, Z: pos.Z - 5},
+func SetNamespacesPosition() {
+	namespacesp = []mctype.Position{
+		{X: initpos.X - 11, Y: initpos.Y + 5, Z: initpos.Z - 11},
+		{X: initpos.X - 11, Y: initpos.Y + 5, Z: initpos.Z - 5},
+		{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 11},
+		{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 5},
 	}
-
-	fmt.Println("here 4 ", namespacesp)
-
-	return namespacesp
 }

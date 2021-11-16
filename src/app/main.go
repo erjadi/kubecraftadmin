@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/sandertv/mcwss/mctype"
@@ -24,6 +23,8 @@ var selectednamespaces []string
 
 var agent mcwss.Agent
 var namespacesp []mctype.Position
+var playerKubeMap = make(map[string][]string)
+var playerEntitiesMap = make(map[string][]string)
 
 // ENV paramaters
 var passedNamespaces = os.Getenv("namespaces")
@@ -54,7 +55,10 @@ func main() {
 
 	// On first connection
 	server.OnConnection(func(player *mcwss.Player) {
-		//go MOTD(player)
+		//MOTD(player)
+		MOTD(player)
+		Actionbar(player, "Connected to k8s cluster")
+
 		fmt.Println("Player has entered!")
 		player.Exec("time set noon", nil)
 		player.Exec("weather clear", nil)
@@ -65,8 +69,6 @@ func main() {
 		player.Exec("give @s tnt 25", nil)
 		player.Exec("give @s flint_and_steel", nil)
 
-		fmt.Println("Selected namespaces: ", selectednamespaces)
-
 		playerName := player.Name()
 		playerTravelMap := make(map[string]bool)
 		playerTravelMap[playerName] = false
@@ -74,88 +76,51 @@ func main() {
 		playerInitMap := make(map[string]bool)
 		playerInitMap[playerName] = false
 
+		GetPlayerPosition(player)
+		SetNamespacesPosition()
+
 		player.OnTravelled(func(event *event.PlayerTravelled) {
-			//if !initialized {
-			if !playerTravelMap[playerName] {
-				playerTravelMap[playerName] = true
-				fmt.Println("traveling")
+			player.Exec("testforblock ~ ~-1 ~ beacon", func(response *command.LocalPlayerName) {
+				if response.StatusCode == 0 {
+					if !playerInitMap[playerName] {
+						playerInitMap[playerName] = true
+						fmt.Println("initialized!")
 
-				//playerIdMap[playerId] = true
-				//initpos = GetPlayerPosition(player)
-				//namespacesp = GetNamespacesPosition(initpos)
-				var x float64
-				var y float64
-				var z float64
+						// Read Namespaces Env - Compile list of selected namespaces
+						namespaces, _ := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 
-				player.Exec("tp ~~~", func(response map[string]interface{}) {
-					if destination, ok := response["destination"]; ok {
-						xString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["x"])
-						x, _ = strconv.ParseFloat(xString, 64)
-
-						yString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["y"])
-						y, _ = strconv.ParseFloat(yString, 64)
-
-						zString := fmt.Sprintf("%v", destination.(interface{}).(map[string]interface{})["z"])
-						z, _ = strconv.ParseFloat(zString, 64)
-					}
-
-					initpos.X = x
-					initpos.Y = y
-					initpos.Z = z
-
-				})
-
-				namespacesp = []mctype.Position{
-					{X: initpos.X - 11, Y: initpos.Y + 5, Z: initpos.Z - 11},
-					{X: initpos.X - 11, Y: initpos.Y + 5, Z: initpos.Z - 5},
-					{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 11},
-					{X: initpos.X - 5, Y: initpos.Y + 5, Z: initpos.Z - 5},
-				}
-			} else {
-				player.Exec("testforblock ~ ~-1 ~ beacon", func(response *command.LocalPlayerName) {
-					if response.StatusCode == 0 {
-						if !playerInitMap[playerName] {
-							fmt.Println("traveling")
-							//playerIdMap[playerName] = true
-							playerInitMap[playerName] = true
-							fmt.Println("initialized!")
-
-							// Read Namespaces Env - Compile list of selected namespaces
-							namespaces, _ := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-
-							if len(passedNamespaces) > 0 {
-								passedNamespacesList := strings.Split(passedNamespaces, ",")
-								for _, ns := range namespaces.Items {
-									for _, envns := range passedNamespacesList {
-										if strings.EqualFold(ns.Name, envns) {
-											selectednamespaces = append(selectednamespaces, ns.Name)
-										}
+						if len(passedNamespaces) > 0 {
+							passedNamespacesList := strings.Split(passedNamespaces, ",")
+							for _, ns := range namespaces.Items {
+								for _, envns := range passedNamespacesList {
+									if strings.EqualFold(ns.Name, envns) {
+										selectednamespaces = append(selectednamespaces, ns.Name)
 									}
-								}
-								if len(selectednamespaces) < 4 { // if less than 4 specified, select until length is 4
-									for _, ns := range namespaces.Items {
-										if !Contains(selectednamespaces, ns.Name) {
-											selectednamespaces = append(selectednamespaces, ns.Name)
-											if len(selectednamespaces) == 4 {
-												break
-											}
-										}
-									}
-								}
-							} else {
-								for i := 0; i < 4; i++ {
-									selectednamespaces = append(selectednamespaces, namespaces.Items[i].Name)
-									fmt.Println("namespace ", selectednamespaces)
 								}
 							}
-
-							Actionbar(player, "Connected to k8s cluster")
-							go LoopReconcile(player, clientset)
+							if len(selectednamespaces) < 4 { // if less than 4 specified, select until length is 4
+								for _, ns := range namespaces.Items {
+									if !Contains(selectednamespaces, ns.Name) {
+										selectednamespaces = append(selectednamespaces, ns.Name)
+										if len(selectednamespaces) == 4 {
+											break
+										}
+									}
+								}
+							}
+						} else {
+							for i := 0; i < 4; i++ {
+								selectednamespaces = append(selectednamespaces, namespaces.Items[i].Name)
+								fmt.Println("namespace ", selectednamespaces)
+							}
 						}
+
+						fmt.Println("Selected namespaces: ", selectednamespaces)
+
+						go LoopReconcile(player, clientset)
 					}
-				})
-				//})
-			}
+				}
+			})
 		})
 
 		// If a mob is killed by the player we do another check which entity is missing
@@ -172,15 +137,10 @@ func main() {
 
 			// Initialize admin area
 			if (strings.Compare(event.Message, "init")) == 0 {
-				//playerTravelMap[playerName] = false
-				//playerInitMap[playerName] = false
+				DeleteEntities(player)
+				GetPlayerPosition(player)
+				SetNamespacesPosition()
 				InitArea(player)
-			}
-
-			// reset
-			if (strings.Compare(event.Message, "reset")) == 0 {
-				playerTravelMap[playerName] = false
-				playerInitMap[playerName] = false
 			}
 
 			// Force sync if auto-init doesn't work
