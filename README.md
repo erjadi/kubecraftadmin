@@ -36,7 +36,8 @@ How to run KubeCraftAdmin:
 
 ## Running KUbecraftadmin on OpenShift
 
-- oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kubekraft:default
+- oc new-project kubecraft
+- oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kubecraft:default
 - oc create -f deploy.yaml
 - Get the route
 - Load minecraft and use ```/connect <route-url>/ws```
