@@ -1,0 +1,113 @@
+---
+- name: Get Application Domain from Cluster Ingress
+  k8s_info:
+    api_version: config.openshift.io/v1
+    kind: Ingress
+    name: cluster
+  when: application_domain is undefined
+  register: ingress
+
+- name: Set Application Domain
+  set_fact:
+    application_domain: "{{ ingress.resources[0].spec.domain }}"
+  when: application_domain is undefined
+
+- debug:
+    msg: "Application Domain: {{ application_domain }}"
+
+- name: Deploy kubecraft
+  k8s:
+    definition:
+      kind: Deployment
+      apiVersion: apps/v1
+      metadata:
+        name: kubecraft
+        namespace: "{{ ansible_operator_meta.namespace }}"
+        labels:
+          app: kubecraft
+      spec:
+        replicas: 1
+        strategy:
+          type: RollingUpdate
+        selector:
+          matchLabels:
+            app: kubecraft
+        template:
+          metadata:
+            labels:
+              app: kubecraft
+              name: kubecraft
+          spec:
+            containers:
+            - image: quay.io/ktenzer/kubecraft:latest
+              imagePullPolicy: Always
+              name: kubecraft
+              ports:
+              - containerPort: 8000
+              env:
+              - name: namespaces
+                value: "{{ namespaces }}"
+              - name: accessWithinCluster
+                value: "true"
+              readinessProbe:
+                tcpSocket:
+                  port: 8000
+                timeoutSeconds: 1
+                periodSeconds: 10
+                successThreshold: 1
+                failureThreshold: 3
+              livenessProbe:
+                tcpSocket:
+                  port: 8000
+                timeoutSeconds: 1
+                periodSeconds: 10
+                successThreshold: 1
+                failureThreshold: 3
+              startupProbe:
+                tcpSocket:
+                  port: 8000
+                timeoutSeconds: 1
+                periodSeconds: 10
+                successThreshold: 1
+                failureThreshold: 3
+            restartPolicy: Always
+        triggers:
+        - type: ConfigChange
+- name: Deploy kubecraft service
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        namespace: "{{ ansible_operator_meta.namespace }}"
+        labels:
+          app: kubecraft
+        name: kubecraft
+      spec:
+        ports:
+        - port: 8000
+          targetPort: 8000
+        selector:
+          app: kubecraft
+          name: kubecraft
+      status:
+        loadBalancer: {}
+- name: Deploy kubecraft route
+  k8s:
+    definition:
+      apiVersion: route.openshift.io/v1
+      kind: Route
+      metadata:
+        namespace: "{{ ansible_operator_meta.namespace }}"
+        annotations:
+          openshift.io/host.generated: "true"
+        name: kubecraft
+      spec:
+        host: "kubecraft-{{ ansible_operator_meta.namespace }}.{{application_domain}}"
+        port:
+          targetPort: 8000
+        to:
+          kind: Service
+          name: kubecraft
+          weight: 100
+        wildcardPolicy: None
