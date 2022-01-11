@@ -1,7 +1,0 @@
-apiVersion: cache.kubecraft.com/v1
-kind: Kubecraft
-metadata:
-  name: kubecraft-sample
-spec:
-  # Add fields here
-  namespaces: helloworld1,helloworld2,kubecraft,openshift-apiserver

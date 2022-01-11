@@ -31,14 +31,8 @@ var passedNamespaces = os.Getenv("namespaces")
 var accessWithinCluster = os.Getenv("accessWithinCluster")
 
 func main() {
-	if passedNamespaces == "" {
-		fmt.Print("The namespaces env parameter was not set (comma separated list of up to 4 namespaces to view in minecraft)!\n")
-		os.Exit(1)
-	}
-
 	if accessWithinCluster == "" {
-		fmt.Print("The accessWithinCluster env parameter was not set (true|false)!\n")
-		os.Exit(1)
+		accessWithinCluster = "false"
 	}
 
 	initialized = false
@@ -78,12 +72,12 @@ func main() {
 		playerInitMap := make(map[string]bool)
 		playerInitMap[playerName] = false
 
-		GetPlayerPosition(player)
-		SetNamespacesPosition()
-
 		player.OnTravelled(func(event *event.PlayerTravelled) {
 			player.Exec("testforblock ~ ~-1 ~ beacon", func(response *command.LocalPlayerName) {
 				if response.StatusCode == 0 {
+					player.Position(func(pos mctype.Position) {
+						SetNamespacesPositionByPos(pos)		
+					})
 					if !playerInitMap[playerName] {
 						playerInitMap[playerName] = true
 						fmt.Println("initialized!")
@@ -140,8 +134,9 @@ func main() {
 			// Initialize admin area
 			if (strings.Compare(event.Message, "init")) == 0 {
 				DeleteEntities(player)
-				GetPlayerPosition(player)
-				SetNamespacesPosition()
+				player.Position(func(pos mctype.Position) {
+					SetNamespacesPositionByPos(pos)		
+				})
 				InitArea(player)
 			}
 

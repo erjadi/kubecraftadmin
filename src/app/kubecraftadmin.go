@@ -39,7 +39,7 @@ func ReconcileKubetoMC(p *mcwss.Player, clientset *kubernetes.Clientset) {
 				playerKubeMap[p.Name()] = kubeentities
 				if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:pod:%s", pod.Namespace, pod.Name)) {
 					if pod.Status.Phase == v1.PodRunning {
-						Summonpos(p, clientset, namespacesp[i], "sheep", fmt.Sprintf("%s:pod:%s", pod.Namespace, pod.Name))
+						Summonpos(p, clientset, namespacesp[i], "pig", fmt.Sprintf("%s:pod:%s", pod.Namespace, pod.Name))
 					}
 				}
 			}
@@ -47,7 +47,6 @@ func ReconcileKubetoMC(p *mcwss.Player, clientset *kubernetes.Clientset) {
 				kubeentities = append(kubeentities, fmt.Sprintf("%s:deployment:%s", deployment.Namespace, deployment.Name))
 				playerKubeMap[p.Name()] = kubeentities
 				if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:deployment:%s", deployment.Namespace, deployment.Name)) {
-					fmt.Printf("Summoning %s:deployment:%s\n", deployment.Namespace, deployment.Name)
 					Summonpos(p, clientset, namespacesp[i], "horse", fmt.Sprintf("%s:deployment:%s", deployment.Namespace, deployment.Name))
 				}
 			}
@@ -69,7 +68,7 @@ func ReconcileKubetoMC(p *mcwss.Player, clientset *kubernetes.Clientset) {
 				kubeentities = append(kubeentities, fmt.Sprintf("%s:statefulset:%s", ss.Namespace, ss.Name))
 				playerKubeMap[p.Name()] = kubeentities
 				if !Contains(playerEntitiesMap[p.Name()], fmt.Sprintf("%s:statefulset:%s", ss.Namespace, ss.Name)) {
-					Summonpos(p, clientset, namespacesp[i], "pig", fmt.Sprintf("%s:statefulset:%s", ss.Namespace, ss.Name))
+					Summonpos(p, clientset, namespacesp[i], "sheep", fmt.Sprintf("%s:statefulset:%s", ss.Namespace, ss.Name))
 				}
 			}
 			for _, ds := range daemonset.Items {
@@ -128,8 +127,8 @@ func LoopReconcile(p *mcwss.Player, clientset *kubernetes.Clientset) {
 // ReconcileMCtoKubeMob will delete a specific resource from Kubernetes based on the entities found in Minecraft. Typically run after mob event.
 func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobType int) {
 	fmt.Println("mob type ", mobType)
-	if mobType == 13 { // delete pod
-		p.Exec("testfor @e[type=sheep]", func(response map[string]interface{}) {
+	if mobType == 12 { // delete pod
+		p.Exec("testfor @e[type=pig]", func(response map[string]interface{}) {
 
 			playerEntitiesMap := make(map[string][]string)
 			victims := fmt.Sprintf("%s", response["victim"])
@@ -149,8 +148,8 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 			}
 		})
 	}
-	if mobType == 12 { // delete pod
-		p.Exec("testfor @e[type=pig]", func(response map[string]interface{}) {
+	if mobType == 13 { // delete statefulset
+		p.Exec("testfor @e[type=sheep]", func(response map[string]interface{}) {
 
 			playerEntitiesMap := make(map[string][]string)
 			victims := fmt.Sprintf("%s", response["victim"])
@@ -214,7 +213,7 @@ func ReconcileMCtoKubeMob(p *mcwss.Player, clientset *kubernetes.Clientset, mobT
 		})
 	}
 
-	if mobType == 128 { // delete deployment
+	if mobType == 128 { // delete daemonset
 		p.Exec("testfor @e[type=goat]", func(response map[string]interface{}) {
 
 			playerEntitiesMap := make(map[string][]string)
