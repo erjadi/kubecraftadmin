@@ -72,12 +72,12 @@ func main() {
 		playerInitMap := make(map[string]bool)
 		playerInitMap[playerName] = false
 
-		GetPlayerPosition(player)
-		SetNamespacesPosition()
-
 		player.OnTravelled(func(event *event.PlayerTravelled) {
 			player.Exec("testforblock ~ ~-1 ~ beacon", func(response *command.LocalPlayerName) {
 				if response.StatusCode == 0 {
+					player.Position(func(pos mctype.Position) {
+						SetNamespacesPositionByPos(pos)		
+					})
 					if !playerInitMap[playerName] {
 						playerInitMap[playerName] = true
 						fmt.Println("initialized!")
@@ -134,8 +134,9 @@ func main() {
 			// Initialize admin area
 			if (strings.Compare(event.Message, "init")) == 0 {
 				DeleteEntities(player)
-				GetPlayerPosition(player)
-				SetNamespacesPosition()
+				player.Position(func(pos mctype.Position) {
+					SetNamespacesPositionByPos(pos)		
+				})
 				InitArea(player)
 			}
 
