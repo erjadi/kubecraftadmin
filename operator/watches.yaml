@@ -1,7 +1,0 @@
----
-# Use the 'create api' subcommand to add watches to this file.
-- version: v1
-  group: cache.kubecraft.com
-  kind: Kubecraft
-  role: kubecraft
-#+kubebuilder:scaffold:watch

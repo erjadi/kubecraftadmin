@@ -31,14 +31,8 @@ var passedNamespaces = os.Getenv("namespaces")
 var accessWithinCluster = os.Getenv("accessWithinCluster")
 
 func main() {
-	if passedNamespaces == "" {
-		fmt.Print("The namespaces env parameter was not set (comma separated list of up to 4 namespaces to view in minecraft)!\n")
-		os.Exit(1)
-	}
-
 	if accessWithinCluster == "" {
-		fmt.Print("The accessWithinCluster env parameter was not set (true|false)!\n")
-		os.Exit(1)
+		accessWithinCluster = "false"
 	}
 
 	initialized = false
