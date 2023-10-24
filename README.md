@@ -31,7 +31,7 @@ How to run KubeCraftAdmin:
 /connect 10.0.0.1:8000/ws
 ```
 5. Next find a nice area to spawn your kubecraft pen. Type *init* to generate the structure.
-6. Lastly step on the [beacon](https://minecraft.gamepedia.com/Beacon) to activate the link with your cluster.
+6. Lastly step on the [beacon](https://minecraft.wiki/w/Beacon) to activate the link with your cluster.
 7. At this point your pens should be populated with animals!
 
 ## Running KUbecraftadmin on OpenShift
@@ -48,7 +48,7 @@ How to run KubeCraftAdmin:
 
 KubeCraftAdmin is written in Golang. It builds upon the great [MCWSS](https://github.com/Sandertv/mcwss) project by [Sandertv](https://github.com/Sandertv).
 
-This project makes use of the [Websocket Server](https://minecraft.gamepedia.com/Commands/wsserver) functionality present in Minecraft Bedrock and Education Edition. The WS connection is a Minecraft client connection, which means that all actions are performed through the client. The server / local world is unaffected and not controlled by this project. This also implies we need to activate cheats in the world to be able to [summon](https://minecraft.gamepedia.com/Commands/summon) or [kill](https://minecraft.gamepedia.com/Commands/kill) entities.
+This project makes use of the [Websocket Server](https://minecraft.wiki/w/Commands/wsserver) functionality present in Minecraft Bedrock and Education Edition. The WS connection is a Minecraft client connection, which means that all actions are performed through the client. The server / local world is unaffected and not controlled by this project. This also implies we need to activate cheats in the world to be able to [summon](https://minecraft.wiki/w/Commands/summon) or [kill](https://minecraft.wiki/w/Commands/kill) entities.
 
 The below description explains the main process which you can find in [kubecraftadmin.go](/src/app/kubecraftadmin.go).  
 Highly simplified, KubeCraftAdmin connects to the Kubernetes cluster, spawns the required entities and starts an endless loop function *LoopReconcile*. Every second it starts a sync function called *ReconcileKubetoMC* which basically:
